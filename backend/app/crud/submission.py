@@ -49,3 +49,11 @@ async def get_passed_submissions_for_context(
     # Сортируем в Python по order_index
     submissions.sort(key=lambda s: s.task.order_index)
     return submissions
+
+from sqlalchemy import func
+
+async def count_passed_submissions(db: AsyncSession) -> int:
+    result = await db.execute(
+        select(func.count(Submission.id)).where(Submission.status == SubmissionStatus.passed)
+    )
+    return result.scalar() or 0

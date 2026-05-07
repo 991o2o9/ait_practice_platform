@@ -10,6 +10,10 @@ class ProjectBase(BaseModel):
 class ProjectCreate(ProjectBase):
     pass
 
+class ProjectUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+
 class ProjectResponse(ProjectBase):
     id: uuid.UUID
     created_by: uuid.UUID

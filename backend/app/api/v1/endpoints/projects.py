@@ -65,6 +65,36 @@ async def create_new_task(
     task = await create_task(db, task_in, project_id)
     return task
 
+from app.schemas.project import ProjectUpdate
+from app.crud.project import delete_project, update_project
+
+@router.delete("/{project_id}")
+async def delete_project_endpoint(
+    project_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    if current_user.role.value != "admin":
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    success = await delete_project(db, project_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {"detail": "Project successfully deleted"}
+
+@router.put("/{project_id}", response_model=ProjectResponse)
+async def update_project_endpoint(
+    project_id: uuid.UUID,
+    project_in: ProjectUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    if current_user.role.value != "admin":
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    project = await update_project(db, project_id, project_in)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return project
+
 from app.crud.submission import get_passed_submissions_for_context
 
 @router.get("/{project_id}/tasks/{task_id}/context")

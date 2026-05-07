@@ -23,3 +23,9 @@ async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
     await db.commit()
     await db.refresh(db_user)
     return db_user
+
+from sqlalchemy import func
+
+async def count_users(db: AsyncSession) -> int:
+    result = await db.execute(select(func.count(User.id)))
+    return result.scalar() or 0

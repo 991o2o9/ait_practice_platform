@@ -52,3 +52,30 @@ async def publish_draft(db: AsyncSession, draft: ProjectPublishRequest, user_id:
     await db.commit()
     await db.refresh(db_project)
     return db_project
+
+from sqlalchemy import func
+from app.schemas.project import ProjectUpdate
+
+async def count_projects(db: AsyncSession) -> int:
+    result = await db.execute(select(func.count(Project.id)))
+    return result.scalar() or 0
+
+async def delete_project(db: AsyncSession, project_id: uuid.UUID) -> bool:
+    project = await db.get(Project, project_id)
+    if not project:
+        return False
+    await db.delete(project)
+    await db.commit()
+    return True
+
+async def update_project(db: AsyncSession, project_id: uuid.UUID, project_in: ProjectUpdate) -> Project | None:
+    project = await db.get(Project, project_id)
+    if not project:
+        return None
+    if project_in.title is not None:
+        project.title = project_in.title
+    if project_in.description is not None:
+        project.description = project_in.description
+    await db.commit()
+    await db.refresh(project)
+    return project
