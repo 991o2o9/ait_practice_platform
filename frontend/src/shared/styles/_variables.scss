@@ -1,0 +1,33 @@
+// Цветовая палитра Premium Design
+$bg-color-main: #0a0a0f;
+$bg-color-secondary: #13131a;
+$bg-color-surface: rgba(255, 255, 255, 0.03);
+$bg-color-surface-hover: rgba(255, 255, 255, 0.06);
+
+$text-color-main: #ffffff;
+$text-color-secondary: #9ca3af;
+$text-color-muted: #6b7280;
+
+$accent-primary: #3b82f6; // Blue
+$accent-primary-hover: #2563eb;
+$accent-secondary: #8b5cf6; // Purple
+
+$success-color: #10b981;
+$error-color: #ef4444;
+$warning-color: #f59e0b;
+
+// Шрифты
+$font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+$font-family-mono: 'JetBrains Mono', monospace;
+
+// Радиусы скругления
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 12px;
+$border-radius-xl: 16px;
+
+// Эффекты
+$transition-base: 0.2s ease-in-out;
+$glass-backdrop-filter: blur(12px);
+$glass-border: 1px solid rgba(255, 255, 255, 0.08);
+$box-shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
