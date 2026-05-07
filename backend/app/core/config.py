@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     ADMIN_USERNAME: str = "admin"
     ADMIN_EMAIL: str = "admin@example.com"
     ADMIN_PASSWORD: str = "admin"
+    
+    GROQ_API_KEY: str = "default_key_to_be_replaced_in_env"
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:

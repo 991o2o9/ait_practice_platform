@@ -23,3 +23,32 @@ async def create_project(db: AsyncSession, project_in: ProjectCreate, user_id: u
     await db.commit()
     await db.refresh(db_project)
     return db_project
+
+from app.schemas.ai import ProjectPublishRequest
+from app.models.task import Task
+
+async def publish_draft(db: AsyncSession, draft: ProjectPublishRequest, user_id: uuid.UUID) -> Project:
+    db_project = Project(
+        title=draft.project_title,
+        description=draft.project_description,
+        ai_generated=draft.ai_generated,
+        created_by=user_id
+    )
+    db.add(db_project)
+    await db.flush() # Получаем ID проекта до коммита
+    
+    for i, task_data in enumerate(draft.tasks, start=1):
+        db_task = Task(
+            project_id=db_project.id,
+            title=task_data.title,
+            difficulty=task_data.difficulty,
+            test_code=task_data.test_code,
+            solution_template=task_data.solution_template,
+            hints=task_data.hints,
+            order_index=i
+        )
+        db.add(db_task)
+        
+    await db.commit()
+    await db.refresh(db_project)
+    return db_project

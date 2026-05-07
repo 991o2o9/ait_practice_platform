@@ -1,11 +1,12 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, projects, submissions
+from app.api.v1.endpoints import auth, projects, submissions, ai
 
 router = APIRouter()
 
 router.include_router(auth.router, prefix="/auth", tags=["auth"])
 router.include_router(projects.router, prefix="/projects", tags=["projects"])
 router.include_router(submissions.router, prefix="/submissions", tags=["submissions"])
+router.include_router(ai.router, prefix="/ai", tags=["ai"])
 @router.get("/health")
 def health_check():
     return {"status": "ok", "project": "backend"}

@@ -5,8 +5,10 @@ from app.models.task import TaskDifficulty
 class TaskBase(BaseModel):
     title: str
     difficulty: TaskDifficulty
+    order_index: int = 1
     test_code: str
     solution_template: str
+    hints: str | None = None
 
 class TaskCreate(TaskBase):
     pass

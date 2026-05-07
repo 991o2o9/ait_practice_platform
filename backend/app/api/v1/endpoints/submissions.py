@@ -21,7 +21,15 @@ async def submit_code(
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
     
-    status, logs = evaluate_code(submission_in.code, task.test_code)
+    from app.services.grader import build_execution_context, evaluate_code
+    
+    # 1. Собираем контекст (прошлый код + текущий код + тесты)
+    combined_code = await build_execution_context(
+        db, current_user.id, task.project_id, task.order_index, submission_in.code, task.test_code
+    )
+    
+    # 2. Оцениваем
+    status, logs = evaluate_code(combined_code)
     
     submission = await create_submission(db, submission_in, current_user.id, status)
     
