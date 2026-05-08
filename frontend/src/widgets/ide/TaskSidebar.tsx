@@ -17,12 +17,9 @@ import { useTheme } from '@/app/providers/ThemeProvider';
 import { useProjectStore } from '@/entities/project/model/useProjectStore';
 
 export function TaskSidebar() {
-  const { tasks, activeTaskId, setActiveTask } = useProjectStore();
+  const { tasks, activeTaskId, setActiveTask, passedTaskIds } = useProjectStore();
 
   const activeTask = tasks.find(t => t.id === activeTaskId);
-  // Определяем статус задачи по её индексу (пока заглушка: текущая - активная, до неё - passed, после - locked)
-  // В будущем статус passed нужно брать из БД (мои сабмишены)
-  const activeIndex = tasks.findIndex(t => t.id === activeTaskId);
   const { theme } = useTheme();
   const monacoTheme = theme === 'dark' ? 'vs-dark' : 'light';
 
@@ -40,23 +37,34 @@ export function TaskSidebar() {
             <p className="text-sm text-muted-foreground text-center mt-4">No tasks yet.</p>
           )}
           {tasks.map((task, index) => {
+            const isPassed = passedTaskIds.includes(task.id);
+            const isCurrent = task.id === activeTaskId;
+            
+            // Task is unlocked if it's passed, or if the PREVIOUS task is passed (or it's the first task)
+            const isUnlocked = index === 0 || passedTaskIds.includes(tasks[index - 1].id);
+            
             let status = 'locked';
-            if (index < activeIndex) status = 'passed';
-            if (index === activeIndex) status = 'current';
+            if (isPassed && !isCurrent) status = 'passed';
+            else if (isCurrent) status = 'current';
+            else if (isUnlocked) status = 'unlocked_not_current';
 
             return (
               <div 
                 key={task.id} 
                 onClick={() => {
-                  // Для теста разрешаем кликать на любые таски
-                  setActiveTask(task.id);
+                  if (isUnlocked || isPassed) {
+                    setActiveTask(task.id);
+                  }
                 }}
-                className={`flex items-start gap-3 p-2 rounded-md transition-colors cursor-pointer hover:bg-muted/50 ${status === 'current' ? 'bg-primary/10' : ''}`}
+                className={`flex items-start gap-3 p-2 rounded-md transition-colors ${
+                  isUnlocked || isPassed ? 'cursor-pointer hover:bg-muted/50' : 'cursor-not-allowed opacity-50'
+                } ${status === 'current' ? 'bg-primary/10' : ''}`}
               >
                 <div className="mt-0.5 shrink-0">
-                  {status === 'passed' && <CheckCircle2 className="h-5 w-5 text-green-500" />}
-                  {status === 'current' && <Circle className="h-5 w-5 text-primary fill-primary/20" />}
-                  {status === 'locked' && <Lock className="h-5 w-5 text-muted-foreground" />}
+                  {isPassed && <CheckCircle2 className="h-5 w-5 text-green-500" />}
+                  {isCurrent && !isPassed && <Circle className="h-5 w-5 text-primary fill-primary/20" />}
+                  {!isPassed && !isCurrent && isUnlocked && <Circle className="h-5 w-5 text-muted-foreground" />}
+                  {!isPassed && !isUnlocked && <Lock className="h-5 w-5 text-muted-foreground" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">

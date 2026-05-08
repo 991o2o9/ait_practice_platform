@@ -37,5 +37,10 @@ export const projectApi = {
   async getProject(projectId: string): Promise<Project> {
     const response = await apiClient.get<Project>(`/projects/${projectId}`);
     return response.data;
+  },
+
+  async getProjectProgress(projectId: string): Promise<string[]> {
+    const response = await apiClient.get<string[]>(`/projects/${projectId}/progress`);
+    return response.data;
   }
 };

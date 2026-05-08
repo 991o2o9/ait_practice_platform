@@ -13,6 +13,8 @@ interface ProjectState {
   fetchProjects: () => Promise<void>;
   setCurrentProject: (projectId: string) => Promise<void>;
   setActiveTask: (taskId: string) => void;
+  passedTaskIds: string[];
+  markTaskPassed: (taskId: string) => void;
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -20,6 +22,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   currentProject: null,
   tasks: [],
   activeTaskId: null,
+  passedTaskIds: [],
   isLoading: false,
   error: null,
 
@@ -57,10 +60,23 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       // Сортируем таски по order_index
       tasks.sort((a, b) => a.order_index - b.order_index);
 
+      // 3. Грузим прогресс
+      const passedTaskIds = await projectApi.getProjectProgress(projectId);
+
+      // Находим первый не пройденный таск
+      let firstUnpassedTaskId = tasks.length > 0 ? tasks[0].id : null;
+      for (const t of tasks) {
+        if (!passedTaskIds.includes(t.id)) {
+          firstUnpassedTaskId = t.id;
+          break;
+        }
+      }
+
       set({ 
         currentProject: project, 
         tasks, 
-        activeTaskId: tasks.length > 0 ? tasks[0].id : null,
+        activeTaskId: firstUnpassedTaskId,
+        passedTaskIds,
         isLoading: false 
       });
     } catch (err: any) {
@@ -70,5 +86,13 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   setActiveTask: (taskId: string) => {
     set({ activeTaskId: taskId });
+  },
+
+  markTaskPassed: (taskId: string) => {
+    set((state) => ({
+      passedTaskIds: state.passedTaskIds.includes(taskId) 
+        ? state.passedTaskIds 
+        : [...state.passedTaskIds, taskId]
+    }));
   }
 }));

@@ -42,6 +42,21 @@ export const useIDEStore = create<IDEState>((set, get) => ({
       const response = await submissionApi.submitCode(taskId, code);
       const newOutput = `[TEST RESULTS]\nStatus: ${response.submission.status.toUpperCase()}\n\n[LOGS]\n${response.details}`;
       set({ consoleOutput: newOutput, isSubmitting: false });
+      
+      if (response.submission.status === 'passed') {
+        // Fire confetti
+        import('canvas-confetti').then((confetti) => {
+          confetti.default({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+        });
+        
+        // Mark task passed
+        const { markTaskPassed } = await import('@/entities/project/model/useProjectStore').then(m => m.useProjectStore.getState());
+        markTaskPassed(taskId);
+      }
     } catch (err: any) {
       set({ 
         consoleOutput: `[ERROR] Failed to submit code:\n${err.response?.data?.detail || err.message}`,

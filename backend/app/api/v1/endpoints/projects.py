@@ -121,3 +121,20 @@ async def get_task_context(
     return {
         "context_code": context_code.strip()
     }
+
+@router.get("/{project_id}/progress", response_model=List[uuid.UUID])
+async def get_project_progress(
+    project_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    from app.models.submission import Submission, SubmissionStatus
+    from app.models.task import Task
+    from sqlalchemy import select
+    stmt = select(Submission.task_id).join(Task, Submission.task_id == Task.id).where(
+        Submission.user_id == current_user.id,
+        Submission.status == SubmissionStatus.passed,
+        Task.project_id == project_id
+    ).distinct()
+    result = await db.execute(stmt)
+    return list(result.scalars().all())

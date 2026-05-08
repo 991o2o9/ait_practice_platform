@@ -15,9 +15,8 @@ def _execute_code_worker(combined_code: str, result_dict: dict):
     safe_globals = {
         "__builtins__": __builtins__
     }
-    safe_locals = {}
     try:
-        exec(combined_code, safe_globals, safe_locals)
+        exec(combined_code, safe_globals)
         result_dict["status"] = SubmissionStatus.passed
         result_dict["logs"] = "All tests passed successfully!"
     except Exception as e:

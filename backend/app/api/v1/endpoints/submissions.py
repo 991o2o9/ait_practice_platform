@@ -29,7 +29,7 @@ async def submit_code(
     )
     
     # 2. Оцениваем
-    status, logs = evaluate_code(combined_code)
+    status, logs = await evaluate_code(combined_code)
     
     submission = await create_submission(db, submission_in, current_user.id, status)
     
