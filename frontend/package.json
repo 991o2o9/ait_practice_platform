@@ -32,6 +32,7 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-hook-form": "^7.75.0",
+    "react-intersection-observer": "^10.0.3",
     "react-markdown": "^10.1.0",
     "react-resizable-panels": "^2.1.4",
     "react-router-dom": "^7.15.0",

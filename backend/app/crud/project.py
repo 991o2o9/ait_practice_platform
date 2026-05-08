@@ -9,6 +9,66 @@ async def get_projects(db: AsyncSession) -> Sequence[Project]:
     result = await db.execute(select(Project).order_by(Project.created_at.desc()))
     return result.scalars().all()
 
+from sqlalchemy import func, or_, and_
+from app.models.submission import Submission, SubmissionStatus
+from app.models.task import Task
+
+async def get_paginated_projects(db: AsyncSession, user_id: uuid.UUID, limit: int, offset: int, search: str | None = None) -> list[dict]:
+    # 1. Subquery for total tasks
+    total_tasks_sq = (
+        select(Task.project_id, func.count(Task.id).label("total_tasks"))
+        .group_by(Task.project_id)
+        .subquery()
+    )
+
+    # 2. Subquery for passed tasks by the user
+    # We use distinct(Submission.task_id) essentially by doing a count of distinct task_ids where status=passed
+    passed_tasks_sq = (
+        select(Task.project_id, func.count(func.distinct(Submission.task_id)).label("passed_tasks"))
+        .select_from(Submission)
+        .join(Task, Submission.task_id == Task.id)
+        .where(
+            Submission.user_id == user_id,
+            Submission.status == SubmissionStatus.passed
+        )
+        .group_by(Task.project_id)
+        .subquery()
+    )
+
+    # 3. Main query
+    stmt = (
+        select(
+            Project,
+            func.coalesce(total_tasks_sq.c.total_tasks, 0).label("total_tasks"),
+            func.coalesce(passed_tasks_sq.c.passed_tasks, 0).label("passed_tasks")
+        )
+        .outerjoin(total_tasks_sq, Project.id == total_tasks_sq.c.project_id)
+        .outerjoin(passed_tasks_sq, Project.id == passed_tasks_sq.c.project_id)
+    )
+
+    if search:
+        search_pattern = f"%{search}%"
+        stmt = stmt.where(
+            or_(
+                Project.title.ilike(search_pattern),
+                Project.description.ilike(search_pattern)
+            )
+        )
+
+    stmt = stmt.order_by(Project.created_at.desc()).limit(limit).offset(offset)
+    
+    result = await db.execute(stmt)
+    rows = result.all()
+    
+    projects_with_progress = []
+    for project, total, passed in rows:
+        proj_dict = project.__dict__.copy()
+        proj_dict["total_tasks"] = total
+        proj_dict["passed_tasks"] = passed
+        projects_with_progress.append(proj_dict)
+        
+    return projects_with_progress
+
 async def get_project(db: AsyncSession, project_id: uuid.UUID) -> Project | None:
     return await db.get(Project, project_id)
 

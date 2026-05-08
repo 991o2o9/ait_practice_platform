@@ -21,3 +21,7 @@ class ProjectResponse(ProjectBase):
 
     class Config:
         from_attributes = True
+
+class ProjectWithProgress(ProjectResponse):
+    passed_tasks: int = 0
+    total_tasks: int = 0

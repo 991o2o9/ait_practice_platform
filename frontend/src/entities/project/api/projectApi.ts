@@ -7,6 +7,8 @@ export interface Project {
   ai_generated: boolean;
   created_by: string;
   created_at: string;
+  passed_tasks?: number;
+  total_tasks?: number;
 }
 
 export interface Task {
@@ -24,8 +26,8 @@ export interface Task {
 }
 
 export const projectApi = {
-  async getProjects(): Promise<Project[]> {
-    const response = await apiClient.get<Project[]>('/projects/');
+  async getProjects(params?: { limit?: number; offset?: number; search?: string }): Promise<Project[]> {
+    const response = await apiClient.get<Project[]>('/projects/', { params });
     return response.data;
   },
 

@@ -43,11 +43,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const state = get();
       let project = state.projects.find(p => p.id === projectId);
       
-      // Если списка нет (например, зашли по прямой ссылке), сначала грузим все
+      // Если списка нет (например, зашли по прямой ссылке) или проект не найден в кэше, грузим напрямую
       if (!project) {
-        const projects = await projectApi.getProjects();
-        project = projects.find(p => p.id === projectId);
-        set({ projects });
+        project = await projectApi.getProject(projectId);
       }
 
       if (!project) {

@@ -23,9 +23,18 @@ async def publish_project_draft(
     project = await publish_draft(db, draft_in, current_user.id)
     return project
 
-@router.get("/", response_model=List[ProjectResponse])
-async def read_projects(db: AsyncSession = Depends(get_db)) -> Any:
-    projects = await get_projects(db)
+from app.schemas.project import ProjectWithProgress
+from app.crud.project import get_paginated_projects
+
+@router.get("/", response_model=List[ProjectWithProgress])
+async def read_projects(
+    limit: int = 20,
+    offset: int = 0,
+    search: str | None = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> Any:
+    projects = await get_paginated_projects(db, current_user.id, limit, offset, search)
     return projects
 
 @router.post("/", response_model=ProjectResponse)
@@ -37,6 +46,16 @@ async def create_new_project(
     if current_user.role.value != "admin":
         raise HTTPException(status_code=403, detail="Not enough permissions")
     project = await create_project(db, project_in, current_user.id)
+    return project
+
+@router.get("/{project_id}", response_model=ProjectResponse)
+async def read_project(
+    project_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db)
+) -> Any:
+    project = await get_project(db, project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
     return project
 
 @router.get("/{project_id}/tasks", response_model=List[TaskResponse])
