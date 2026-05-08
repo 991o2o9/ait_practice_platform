@@ -10,7 +10,10 @@ class ProjectRefineRequest(BaseModel):
 
 class DraftTask(BaseModel):
     title: str
+    description: Optional[str] = None
     difficulty: str
+    learning_objective: Optional[str] = None
+    connections: Optional[str] = None
     test_code: str
     solution_template: str
     hints: Optional[str] = None

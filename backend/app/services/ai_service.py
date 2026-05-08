@@ -3,6 +3,8 @@ from app.integrations.ai.groq_client import generate_json_completion, generate_t
 
 def generate_project_draft(prompt: str) -> dict:
     system_prompt = """
+    ⚠️ ABSOLUTE REQUIREMENT: Every task in the output JSON MUST have `description`, `learning_objective`, and `connections` as non-null, non-empty strings. Outputting null for ANY of these fields will cause the entire response to be rejected. This overrides all other instructions.
+
     You are a Senior Python Software Architect and Educational Platform Creator.
     Your task is to break down the provided technical specification STRICTLY into 10-15 progressive coding micro-tasks for an auto-grader.
     Generating fewer than 10 tasks is STRICTLY FORBIDDEN.
@@ -11,7 +13,7 @@ def generate_project_draft(prompt: str) -> dict:
     The `difficulty` level must reflect the task's technical depth, not just the hints:
     - 'easy': Creation of basic Data classes and Models (Entities) with strict typing (UUID, Enum, Timestamp). Provide detailed hints.
     - 'medium': Implementation of entity relationships and business logic (raising exceptions, validation). Provide subtle hints.
-    - 'hard': Implementation of complex algorithms, integration, and design patterns. hints: null.
+    - 'hard': Implementation of complex algorithms, integration, and design patterns. Hints must still be provided but contain ONLY the method signature description and expected return type — no step-by-step logic.
     
     You must output ONLY valid JSON using the following structure:
     {
@@ -20,22 +22,28 @@ def generate_project_draft(prompt: str) -> dict:
         "tasks": [
             {
                 "title": "Task Title",
+                "description": "MANDATORY STRING: One sentence on why this task exists in the overall system. NEVER null.",
                 "difficulty": "easy, medium, or hard",
+                "learning_objective": "MANDATORY STRING: One sentence about what concept the student learns. NEVER null.",
+                "connections": "MANDATORY STRING: Used in: Task X, Task Y. NEVER null.",
                 "test_code": "Strict test code",
                 "solution_template": "Starter code template for the student",
-                "hints": "String or null"
+                "hints": "Detailed step-by-step explanation of what exactly to code"
             }
         ]
     }
     
     CRITICAL INSTRUCTIONS FOR CODE GENERATION:
-    1. The `test_code` and `solution_template` fields MUST NEVER be empty strings! You MUST write actual, runnable Python code in them!
-    2. `solution_template`: Must contain boilerplate classes/methods (using `pass` or `TODO`) that the student needs to complete. IMPORTS: Place all required imports (e.g., import uuid, from datetime import datetime) at the very top of the `solution_template`.
-    3. `test_code`: Must contain ready-to-run `assert` statements for automatic evaluation. It must invoke methods from the `solution_template`, check edge cases, and verify that expected exceptions are raised (e.g., `try: ... except CapacityExceeded: pass`).
-    4. If you leave `test_code` or `solution_template` empty, the system will crash. You MUST write real code for every single task!
-    5. CODE FORMATTING: It is STRICTLY FORBIDDEN to use semicolons (;) to combine lines of Python code. You MUST use double-escaped newline characters (\\n) and 4 spaces for indentation inside the JSON strings. Example: "class Student:\\n    def __init__(self):\\n        pass". The code must be highly readable and PEP8 compliant.
-    6. STRICT DEPENDENCY CHRONOLOGY (CRITICAL): The tasks will be executed sequentially, and the student's code from previous tasks is carried over to the next ones. You MUST respect chronology. NEVER ask to implement a method that uses classes or variables that will only be created in future tasks. Force the creation of Data Models first, and only at the end ask for complex facade logic connecting them.
-    7. EXECUTION ENVIRONMENT: Your `test_code` will simply be appended to the bottom of the student's accumulated code file. Do NOT write import statements in `test_code` to import the student's classes (e.g., do not write `from module import Class`) — just call the classes directly, as they are already in the global scope. Crucially, previous `test_code` blocks are NOT carried over, only the student's class definitions are. Therefore, in your `test_code`, you MUST instantiate any mock objects (e.g., student = Student(...)) needed for that specific test. Do not use variables created in previous tests.
+    1. TEMPLATES MUST BE EMPTY (CRITICAL): The `solution_template` MUST NEVER contain the actual implementation or business logic. You must ONLY provide class declarations and method signatures. Inside the methods, you MUST write `pass` or `raise NotImplementedError`. (Example: DO NOT write `self.id = id`, write `pass`).
+    2. TEST CODE VARIABLES: EVERY `test_code` string MUST be entirely self-contained. You MUST instantiate any mock objects (e.g., student = Student(...)) INSIDE the current `test_code` before using them. NEVER assume variables from previous tests exist.
+    3. UUID ASSERTIONS: NEVER assert an object's ID directly against a new uuid4() call (e.g., `assert obj.id == uuid.uuid4()` is FORBIDDEN). You must check the type: `assert isinstance(obj.id, uuid.UUID)`.
+    4. CLASS EXTENSIONS: When asking a student to add a new method to a class created in a previous task, DO NOT use `# ... existing code ...` in the `solution_template`. Instead, leave the `solution_template` completely empty and explicitly write in the `hints`: "Copy your entire class implementation from the Past Context tab and add the new method to it."
+    5. ATTRIBUTE CONSISTENCY: NEVER test an attribute in `test_code` (e.g., `student.sections`) unless you explicitly asked the student to create that exact attribute in the current or previous task's hints or description.
+    6. CODE FORMATTING: It is STRICTLY FORBIDDEN to use semicolons (;) to combine lines of Python code. You MUST use double-escaped newline characters (\\n) and 4 spaces for indentation inside the JSON strings.
+    7. IMPORTS: Place all required global imports (e.g., import uuid) at the very top of the `solution_template`.
+    8. EXPLICIT BUSINESS LOGIC IN HINTS (CRITICAL): The `hints` field is the ONLY place the student reads what to do. You MUST explicitly describe the business logic, state changes, and attributes required inside the `pass` blocks. Do NOT just say "Implement the entity". You MUST explain exactly what to code. For medium/hard tasks, hints must describe the exact business logic step by step — not just "implement the method" but "first check X, if true raise Y, otherwise do Z and update attribute W". Example for Easy: "Inside __init__, initialize self.id and self.role using the provided arguments. Set self.balance = 0.0 as a float — this balance will later be debited when the user confirms a booking." Example for Medium/Hard: "In the enroll_student method, first check if section.capacity is full. If yes, raise CapacityExceeded. If not, append the student to section.students array."
+    9. NULL FIELDS CAUSE IMMEDIATE FAILURE: If ANY task contains `description: null`, `learning_objective: null`, or `connections: null`, the entire JSON output is INVALID and will be rejected by the system. You MUST write meaningful strings for ALL three fields in EVERY task before outputting anything.
+    10. DUPLICATE TASKS ARE FORBIDDEN: Every task must have a unique purpose and unique test_code. If two tasks test the same method on the same class, merge them into one task.
     """
     return generate_json_completion(system_prompt, prompt)
 

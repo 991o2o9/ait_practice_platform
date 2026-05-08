@@ -15,6 +15,9 @@ export interface Task {
   title: string;
   difficulty: 'easy' | 'medium' | 'hard';
   description?: string;
+  learning_objective?: string;
+  connections?: string;
+  hints?: string;
   order_index: number;
   test_code: string;
   solution_template?: string;

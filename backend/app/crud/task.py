@@ -16,9 +16,13 @@ async def create_task(db: AsyncSession, task_in: TaskCreate, project_id: uuid.UU
     db_task = Task(
         project_id=project_id,
         title=task_in.title,
+        description=task_in.description,
         difficulty=task_in.difficulty,
+        learning_objective=task_in.learning_objective,
+        connections=task_in.connections,
         test_code=task_in.test_code,
-        solution_template=task_in.solution_template
+        solution_template=task_in.solution_template,
+        hints=task_in.hints
     )
     db.add(db_task)
     await db.commit()

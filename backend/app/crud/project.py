@@ -41,6 +41,9 @@ async def publish_draft(db: AsyncSession, draft: ProjectPublishRequest, user_id:
         db_task = Task(
             project_id=db_project.id,
             title=task_data.title,
+            description=task_data.description,
+            learning_objective=task_data.learning_objective,
+            connections=task_data.connections,
             difficulty=task_data.difficulty,
             test_code=task_data.test_code,
             solution_template=task_data.solution_template,

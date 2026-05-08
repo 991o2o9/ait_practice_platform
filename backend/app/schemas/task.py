@@ -4,7 +4,10 @@ from app.models.task import TaskDifficulty
 
 class TaskBase(BaseModel):
     title: str
+    description: str | None = None
     difficulty: TaskDifficulty
+    learning_objective: str | None = None
+    connections: str | None = None
     order_index: int = 1
     test_code: str
     solution_template: str
