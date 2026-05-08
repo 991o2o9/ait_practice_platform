@@ -1,18 +1,19 @@
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import './styles/index.scss';
+import { ThemeProvider } from './providers/ThemeProvider';
+import { RouterProvider } from './providers/RouterProvider';
+import './styles/index.css';
 
 const queryClient = new QueryClient();
 
 export function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <div style={{ padding: '2rem', textAlign: 'center' }}>
-          <h1>AIT Practice Platform</h1>
-          <p>Frontend initialized successfully!</p>
-        </div>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <ThemeProvider defaultTheme="dark" storageKey="ait-theme">
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <RouterProvider />
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
