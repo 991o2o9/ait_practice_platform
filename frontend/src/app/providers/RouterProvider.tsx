@@ -31,6 +31,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 import { IDEPage } from '@/pages/ide/IDEPage';
 
+import { ProjectsPage } from '@/pages/projects/ProjectsPage';
+
 export const RouterProvider = () => {
   const checkAuth = useUserStore((state) => state.checkAuth);
 
@@ -48,8 +50,8 @@ export const RouterProvider = () => {
         element={
           <ProtectedRoute>
             <Routes>
-              <Route path="/" element={<IDEPage />} />
-              {/* Будущие роуты: /projects, /projects/:id/workspace */}
+              <Route path="/" element={<ProjectsPage />} />
+              <Route path="/projects/:id/workspace" element={<IDEPage />} />
             </Routes>
           </ProtectedRoute>
         } 

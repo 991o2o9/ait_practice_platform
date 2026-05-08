@@ -5,10 +5,13 @@ import { Moon, Sun, Settings, LayoutDashboard, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 
+import { useProjectStore } from '@/entities/project/model/useProjectStore';
+
 export function IDEHeader() {
   const { theme, setTheme } = useTheme();
   const user = useUserStore((state) => state.user);
   const logout = useUserStore((state) => state.logout);
+  const currentProject = useProjectStore((state) => state.currentProject);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -19,14 +22,21 @@ export function IDEHeader() {
   return (
     <header className="flex items-center justify-between px-4 h-14 border-b border-border bg-background z-10 shrink-0">
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 font-bold text-lg tracking-tight">
+        <div 
+          className="flex items-center gap-2 font-bold text-lg tracking-tight cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => navigate('/')}
+        >
           <LayoutDashboard className="h-5 w-5 text-primary" />
           <span>AIT <span className="text-primary">Practice</span></span>
         </div>
-        <div className="h-4 w-px bg-border mx-2" />
-        <span className="text-sm font-medium text-muted-foreground hidden sm:inline-block">
-          Project Workspace
-        </span>
+        {currentProject && (
+          <>
+            <div className="h-4 w-px bg-border mx-2" />
+            <span className="text-sm font-medium text-muted-foreground hidden sm:inline-block">
+              {currentProject.title}
+            </span>
+          </>
+        )}
       </div>
 
       <div className="flex items-center gap-3">
