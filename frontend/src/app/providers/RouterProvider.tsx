@@ -29,24 +29,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Заглушка для Dashboard, пока не сверстаем IDE
-const DashboardPlaceholder = () => {
-  const user = useUserStore((state) => state.user);
-  const logout = useUserStore((state) => state.logout);
-  
-  return (
-    <div className="p-8 text-center min-h-screen bg-background">
-      <h1 className="text-4xl font-bold tracking-tight mb-4 text-foreground">Welcome to IDE</h1>
-      <p className="text-muted-foreground mb-8">You are logged in as {user?.email} ({user?.role})</p>
-      <button 
-        onClick={logout}
-        className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90"
-      >
-        Logout
-      </button>
-    </div>
-  );
-};
+import { IDEPage } from '@/pages/ide/IDEPage';
 
 export const RouterProvider = () => {
   const checkAuth = useUserStore((state) => state.checkAuth);
@@ -65,7 +48,7 @@ export const RouterProvider = () => {
         element={
           <ProtectedRoute>
             <Routes>
-              <Route path="/" element={<DashboardPlaceholder />} />
+              <Route path="/" element={<IDEPage />} />
               {/* Будущие роуты: /projects, /projects/:id/workspace */}
             </Routes>
           </ProtectedRoute>
