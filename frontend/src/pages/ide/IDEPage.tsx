@@ -10,7 +10,7 @@ import { useProjectStore } from '@/entities/project/model/useProjectStore';
 export function IDEPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { setCurrentProject, currentProject, isLoading, error } = useProjectStore();
+  const { setCurrentProject, currentProject, isLoading } = useProjectStore();
 
   useEffect(() => {
     if (id) {

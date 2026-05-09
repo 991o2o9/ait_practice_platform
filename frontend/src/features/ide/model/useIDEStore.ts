@@ -13,7 +13,7 @@ interface IDEState {
   clearConsole: () => void;
 }
 
-export const useIDEStore = create<IDEState>((set, get) => ({
+export const useIDEStore = create<IDEState>((set, _get) => ({
   codeByTaskId: {},
   contextByTaskId: {},
   consoleOutput: "Welcome to AIT Practice Console.\nReady to run tests...",
