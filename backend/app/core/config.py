@@ -17,6 +17,14 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = "admin"
     
     GROQ_API_KEY: str = "default_key_to_be_replaced_in_env"
+    
+    GITHUB_CLIENT_ID: str = ""
+    GITHUB_CLIENT_SECRET: str = ""
+    
+    DISCORD_CLIENT_ID: str = ""
+    DISCORD_CLIENT_SECRET: str = ""
+    
+    FRONTEND_URL: str = "http://localhost:5173"
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:

@@ -33,6 +33,8 @@ import { IDEPage } from '@/pages/ide/IDEPage';
 
 import { ProjectsPage } from '@/pages/projects/ProjectsPage';
 
+import { AuthCallbackPage } from '@/pages/login/AuthCallbackPage';
+
 export const RouterProvider = () => {
   const checkAuth = useUserStore((state) => state.checkAuth);
 
@@ -45,6 +47,7 @@ export const RouterProvider = () => {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route 
         path="/*" 
         element={

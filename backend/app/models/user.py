@@ -15,7 +15,10 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     username: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     email: Mapped[str] = mapped_column(String(100), unique=True, index=True)
-    hashed_password: Mapped[str] = mapped_column(String(255))
+    hashed_password: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    github_id: Mapped[str | None] = mapped_column(String(100), unique=True, index=True, nullable=True)
+    discord_id: Mapped[str | None] = mapped_column(String(100), unique=True, index=True, nullable=True)
+    avatar_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.student)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
