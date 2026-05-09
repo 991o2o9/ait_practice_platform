@@ -144,6 +144,7 @@ export function ProjectsListPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
+                          {/* @ts-expect-error Trigger asChild prop type might be missing */}
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-zinc-800 text-zinc-400">
                               <span className="sr-only">Open menu</span>

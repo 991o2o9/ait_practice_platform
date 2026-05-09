@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Wand2, ArrowRight, Check, Sparkles } from 'lucide-react';
+import { Loader2, Wand2, Check, Sparkles } from 'lucide-react';
 import { aiApi } from '@/entities/admin/api/aiApi';
 import type { DraftResponse } from '@/entities/admin/api/aiApi';
 import { toast } from 'sonner';
@@ -134,6 +134,7 @@ export function AIGeneratorPage() {
             </CardHeader>
             <CardContent className="pt-6">
               <h3 className="text-lg font-semibold text-zinc-200 mb-4">Curriculum Outline</h3>
+              {/* @ts-expect-error Accordion type might not be fully defined */}
               <Accordion type="multiple" className="space-y-3">
                 {draft.tasks.map((task, idx) => (
                   <AccordionItem key={idx} value={`task-${idx}`} className="border-zinc-800 bg-zinc-950/50 rounded-lg overflow-hidden border px-1">

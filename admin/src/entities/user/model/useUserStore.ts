@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { apiClient } from '@/shared/api/axios';
 import { jwtDecode } from 'jwt-decode';
 
 interface User {

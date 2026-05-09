@@ -5,10 +5,10 @@ import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { AIGeneratorPage } from '@/pages/generator/AIGeneratorPage';
 import { ProjectsListPage } from '@/pages/projects/ProjectsListPage';
 import { useUserStore } from '@/entities/user/model/useUserStore';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Toaster } from 'sonner';
 
-function ProtectedRoute({ children }: { children: JSX.Element }) {
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, user } = useUserStore();
   
   if (isLoading) {
