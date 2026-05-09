@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = "admin"
     
     GROQ_API_KEY: str = "default_key_to_be_replaced_in_env"
+    GROQ_VALIDATOR_API_KEY: str = ""
     
     GITHUB_CLIENT_ID: str = ""
     GITHUB_CLIENT_SECRET: str = ""
