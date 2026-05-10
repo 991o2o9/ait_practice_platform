@@ -58,14 +58,30 @@ easy   → medium → hard. Never go backward.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📝 HINTS QUALITY RULES (critical for learning)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Hints must describe the EXACT business logic the student needs to implement.
-Be explicit about:
-- Every state change (e.g. "set self.balance -= amount")
-- Every condition to check (e.g. "if sender balance < amount, raise InsufficientFunds")
-- Every return value (e.g. "return the created Transaction object")
-- Every exception to raise and when
+Hints are the ONLY instructions the student reads. They must be 100% self-sufficient.
 
-DO NOT write vague hints like "implement the logic" or "check for errors".
+FOR EASY TASKS (data classes / entities) hints MUST explicitly state:
+- Every Enum class name AND all its values with exact names:
+  e.g. "Create a UserStatus Enum with two values: ACTIVE = 1 and SUSPENDED = 2"
+- Every attribute: its exact name, type, and how to store it in __init__:
+  e.g. "In __init__, assign id (type uuid.UUID) to self.id and status (type UserStatus) to self.status"
+- Every required import: uuid, Enum, Decimal, datetime — list them explicitly.
+NEVER write "create an Enum for the status" without listing the actual Enum values.
+NEVER write "use UUID for the id" without showing the exact attribute assignment.
+
+FOR MEDIUM TASKS (business logic) hints MUST explicitly state:
+- Every condition to check (e.g. "if sender.balance < amount, raise InsufficientFunds")
+- Every state change (e.g. "subtract amount from sender.balance, add amount to receiver.balance")
+- Every return value (e.g. "return the newly created Transaction object")
+- Every exception class to raise and the exact condition that triggers it
+
+FOR HARD TASKS hints contain ONLY:
+- The method signature with parameter types and the return type
+- No step-by-step logic
+
+NEVER write vague hints like "implement the logic", "check for errors",
+or "use the library". Every hint must be specific enough that the student
+can write the code without guessing anything.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📦 OUTPUT FORMAT — output ONLY valid JSON, nothing else
@@ -135,6 +151,77 @@ Write tests that verify that exact behaviour — not just that the code runs wit
 6. IMPORTS FIRST: All imports at the top of test_code.
 
 7. NO SEMICOLONS: Use \\n and 4-space indentation only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⛔ STRICTLY FORBIDDEN IN test_code
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The following patterns WILL break the auto-grader. Never use them:
+
+A. unittest.TestCase classes
+   WRONG:  class TestWallet(unittest.TestCase):
+               def test_init(self): ...
+   CORRECT: Write plain functions and call them at the bottom:
+               def test_wallet_init():
+                   wallet = Wallet(...)
+                   assert ...
+               test_wallet_init()
+
+B. External module imports — the auto-grader has no external modules.
+   WRONG:  from your_module import InsufficientFunds
+           from my_app.models import Wallet
+   CORRECT: Define all classes inline at the top of test_code.
+            The platform injects the student's code automatically —
+            just USE the class names directly without importing them.
+
+C. unittest.mock / patch — no mocking allowed.
+   WRONG:  with patch('MyClass.some_method', return_value=...):
+   CORRECT: Set up real objects with the exact state you need,
+            then call the real method.
+
+D. if __name__ == '__main__': unittest.main()
+   WRONG:  if __name__ == '__main__': unittest.main()
+   CORRECT: Call test functions directly at the bottom of the file:
+               test_wallet_init()
+               test_wallet_balance()
+
+E. import unittest — never needed. Use plain assert statements only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 CORRECT test_code STRUCTURE TEMPLATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+import uuid
+from decimal import Decimal
+from enum import Enum
+
+# ── inline helper classes if needed ──
+class Currency(Enum):
+    USD = 1
+    EUR = 2
+
+# ── test functions ──
+def test_type_check():
+    wallet = Wallet(id=uuid.uuid4(), balance=Decimal('100.00'), currency=Currency.USD)
+    assert isinstance(wallet.id, uuid.UUID)
+    assert isinstance(wallet.balance, Decimal)
+    assert isinstance(wallet.currency, Currency)
+
+def test_value_state():
+    wallet = Wallet(id=uuid.uuid4(), balance=Decimal('100.00'), currency=Currency.USD)
+    assert wallet.balance == Decimal('100.00')
+    assert wallet.currency == Currency.USD
+
+def test_behaviour():
+    raised = False
+    try:
+        raise InsufficientFunds("not enough")
+    except InsufficientFunds:
+        raised = True
+    assert raised, "InsufficientFunds must be raiseable"
+
+# ── run all tests ──
+test_type_check()
+test_value_state()
+test_behaviour()
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📦 OUTPUT FORMAT — output ONLY valid JSON, nothing else
@@ -245,11 +332,15 @@ and output ONLY valid JSON: {"tasks": [ ...fixed tasks... ]}
 
 2. MINIMUM 3 MEANINGFUL ASSERTIONS: Every `test_code` must have at least 3 assertions
    that verify real behaviour — type checks, value/state checks, integration checks.
-   ⛔ Remove or rewrite any assertion that is always true regardless of implementation:
-      - `assert not raised` after a method that has `pass` body — REMOVE IT
-      - `type(obj) == ClassName` without `assert` keyword — REMOVE IT
-      - `assert True` — REMOVE IT
-   Replace removed assertions with ones that check actual state or return values.
+   ⛔ Remove or rewrite any of these forbidden patterns:
+      - `assert not raised` after a method with `pass` body — REMOVE
+      - `type(obj) == ClassName` without `assert` keyword — REMOVE
+      - `assert True` — REMOVE
+      - `class TestXxx(unittest.TestCase)` — rewrite as plain functions called at the bottom
+      - `from your_module import ...` or any non-stdlib import — remove, use classes inline
+      - `unittest.mock` / `patch(...)` — remove, use real objects instead
+      - `if __name__ == '__main__': unittest.main()` — remove, call functions directly
+   Replace removed patterns with assertions that check actual state or return values.
 
 3. SAFE EXCEPTION TESTING: NEVER bare `except SomeError: assert True`.
    Rewrite with the safe pattern:
