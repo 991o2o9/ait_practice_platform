@@ -1,29 +1,45 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminUserApi, AdminUserResponse } from '@/entities/user/api/adminUserApi';
+import { useEffect, useState } from 'react';
+import { adminUserApi, type AdminUserResponse } from '@/entities/user/api/adminUserApi';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { Shield, ShieldAlert, CheckCircle2, Ban, Github, MessageSquare } from 'lucide-react';
-import { Badge } from '@/shared/ui/badge';
-import { Button } from '@/shared/ui/button';
+import { Shield, CheckCircle2, Ban } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export function UsersListPage() {
-  const queryClient = useQueryClient();
+  const [users, setUsers] = useState<AdminUserResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<any>(null);
+  const [isPending, setIsPending] = useState(false);
 
-  const { data: users, isLoading, error } = useQuery({
-    queryKey: ['admin-users'],
-    queryFn: adminUserApi.getUsers,
-  });
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      const data = await adminUserApi.getUsers();
+      setUsers(data);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const toggleBlockMutation = useMutation({
-    mutationFn: (userId: string) => adminUserApi.toggleBlock(userId),
-    onSuccess: (data) => {
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const toggleBlockUser = async (userId: string) => {
+    try {
+      setIsPending(true);
+      const data = await adminUserApi.toggleBlock(userId);
       toast.success(`User has been ${data.is_blocked ? 'blocked' : 'unblocked'}`);
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Failed to toggle block status');
-    },
-  });
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || 'Failed to toggle block status');
+    } finally {
+      setIsPending(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -66,7 +82,7 @@ export function UsersListPage() {
               </tr>
             </thead>
             <tbody className="[&_tr:last-child]:border-0">
-              {users?.map((user) => (
+              {users.map((user: AdminUserResponse) => (
                 <tr key={user.id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                   <td className="p-4 align-middle">
                     <div className="flex items-center gap-3">
@@ -84,9 +100,10 @@ export function UsersListPage() {
                     </div>
                   </td>
                   <td className="p-4 align-middle">
-                    <div className="flex gap-2 text-muted-foreground">
-                      {user.github_id && <Github className="h-4 w-4" />}
-                      {user.discord_id && <MessageSquare className="h-4 w-4" />}
+                    <div className="flex gap-2 text-xs text-muted-foreground">
+                      {user.github_id && <span>GitHub</span>}
+                      {user.discord_id && <span>Discord</span>}
+                      {!user.github_id && !user.discord_id && <span>-</span>}
                     </div>
                   </td>
                   <td className="p-4 align-middle">
@@ -102,7 +119,7 @@ export function UsersListPage() {
                     {format(new Date(user.created_at), 'MMM d, yyyy')}
                   </td>
                   <td className="p-4 align-middle font-medium">
-                    {user.passed_submissions_count}
+                    {user.passed_submissions_count || 0}
                   </td>
                   <td className="p-4 align-middle">
                     {user.is_blocked ? (
@@ -119,8 +136,8 @@ export function UsersListPage() {
                     <Button
                       variant={user.is_blocked ? "outline" : "destructive"}
                       size="sm"
-                      onClick={() => toggleBlockMutation.mutate(user.id)}
-                      disabled={toggleBlockMutation.isPending || user.role === 'admin'}
+                      onClick={() => toggleBlockUser(user.id)}
+                      disabled={isPending || user.role === 'admin'}
                       className="w-[100px]"
                     >
                       {user.is_blocked ? 'Unblock' : 'Block User'}
@@ -128,7 +145,7 @@ export function UsersListPage() {
                   </td>
                 </tr>
               ))}
-              {users?.length === 0 && (
+              {users.length === 0 && (
                 <tr>
                   <td colSpan={7} className="p-8 text-center text-muted-foreground">
                     No users found.
