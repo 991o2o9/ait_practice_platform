@@ -14,6 +14,13 @@ class UserResponse(UserBase):
     id: uuid.UUID
     role: UserRole
     created_at: datetime
+    avatar_url: str | None = None
 
     class Config:
         from_attributes = True
+
+class AdminUserResponse(UserResponse):
+    is_blocked: bool
+    github_id: str | None = None
+    discord_id: str | None = None
+    passed_submissions_count: int | None = 0

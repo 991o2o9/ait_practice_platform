@@ -29,3 +29,28 @@ from sqlalchemy import func
 async def count_users(db: AsyncSession) -> int:
     result = await db.execute(select(func.count(User.id)))
     return result.scalar() or 0
+
+from app.models.submission import Submission, SubmissionStatus
+
+async def get_all_users_with_stats(db: AsyncSession):
+    stmt = (
+        select(
+            User,
+            func.count(Submission.id).label("passed_submissions_count")
+        )
+        .outerjoin(
+            Submission,
+            (User.id == Submission.user_id) & (Submission.status == SubmissionStatus.passed)
+        )
+        .group_by(User.id)
+        .order_by(User.created_at.desc())
+    )
+    result = await db.execute(stmt)
+    # Return as list of dicts or objects. We'll return the user objects with the count injected or as a tuple.
+    # Actually, returning a list of dicts mapping perfectly to AdminUserResponse is easier.
+    users = []
+    for user, count in result.all():
+        # Inject the count into the user object (Pydantic can read from attributes)
+        user.passed_submissions_count = count
+        users.append(user)
+    return users

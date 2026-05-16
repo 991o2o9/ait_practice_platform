@@ -4,6 +4,7 @@ import { LoginPage } from '@/pages/login/LoginPage';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { AIGeneratorPage } from '@/pages/generator/AIGeneratorPage';
 import { ProjectsListPage } from '@/pages/projects/ProjectsListPage';
+import { UsersListPage } from '@/pages/users/UsersListPage';
 import { useUserStore } from '@/entities/user/model/useUserStore';
 import React, { useEffect } from 'react';
 import { Toaster } from 'sonner';
@@ -46,6 +47,7 @@ export function App() {
             }
           >
             <Route index element={<DashboardPage />} />
+            <Route path="users" element={<UsersListPage />} />
             <Route path="projects" element={<ProjectsListPage />} />
             <Route path="generate" element={<AIGeneratorPage />} />
           </Route>

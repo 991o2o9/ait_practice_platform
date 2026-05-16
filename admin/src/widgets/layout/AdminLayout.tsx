@@ -1,6 +1,6 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useUserStore } from '@/entities/user/model/useUserStore';
-import { Shield, LayoutDashboard, Wand2, LogOut, FolderGit2 } from 'lucide-react';
+import { Shield, LayoutDashboard, Wand2, LogOut, FolderGit2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function AdminLayout() {
@@ -15,6 +15,7 @@ export function AdminLayout() {
 
   const navItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+    { name: 'Users', path: '/users', icon: Users },
     { name: 'Projects', path: '/projects', icon: FolderGit2 },
     { name: 'AI Generator', path: '/generate', icon: Wand2 },
   ];
