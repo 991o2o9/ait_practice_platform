@@ -109,14 +109,17 @@ async def github_callback(code: str, db: AsyncSession = Depends(get_db)) -> Any:
 
 @router.get("/discord/login")
 async def discord_login(request: Request):
-    # Using the request URL to dynamically get the host, assuming default setup
-    redirect_uri = "http://localhost:8000/api/v1/oauth/discord/callback"
+    redirect_uri = str(request.url_for('discord_callback'))
+    if request.headers.get("x-forwarded-proto") == "https":
+        redirect_uri = redirect_uri.replace("http://", "https://")
     discord_auth_url = f"https://discord.com/api/oauth2/authorize?client_id={settings.DISCORD_CLIENT_ID}&redirect_uri={redirect_uri}&response_type=code&scope=identify%20email"
     return RedirectResponse(url=discord_auth_url)
 
 @router.get("/discord/callback")
-async def discord_callback(code: str, db: AsyncSession = Depends(get_db)) -> Any:
-    redirect_uri = "http://localhost:8000/api/v1/oauth/discord/callback"
+async def discord_callback(request: Request, code: str, db: AsyncSession = Depends(get_db)) -> Any:
+    redirect_uri = str(request.url_for('discord_callback'))
+    if request.headers.get("x-forwarded-proto") == "https":
+        redirect_uri = redirect_uri.replace("http://", "https://")
     
     async with httpx.AsyncClient() as client:
         # 1. Exchange code for access token

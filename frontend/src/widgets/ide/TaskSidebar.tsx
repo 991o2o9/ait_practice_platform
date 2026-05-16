@@ -1,7 +1,5 @@
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { ScrollArea } from '@/shared/ui/scroll-area';
-import { CheckCircle2, Circle, Lock } from 'lucide-react';
+import { useTheme } from '@/app/providers/ThemeProvider';
+import { useProjectStore } from '@/entities/project/model/useProjectStore';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import {
@@ -12,9 +10,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/shared/ui/dialog';
+import { ScrollArea } from '@/shared/ui/scroll-area';
 import Editor from '@monaco-editor/react';
-import { useTheme } from '@/app/providers/ThemeProvider';
-import { useProjectStore } from '@/entities/project/model/useProjectStore';
+import { CheckCircle2, Circle, Lock } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export function TaskSidebar() {
   const { tasks, activeTaskId, setActiveTask, passedTaskIds } = useProjectStore();
@@ -109,7 +109,7 @@ export function TaskSidebar() {
                 )}
 
                 <div className="prose prose-sm dark:prose-invert max-w-none border-t border-border pt-4">
-                  <h3 className="text-sm font-semibold mb-2">Instructions</h3>
+                  <h3 className="text-sm font-semibold mb-2">Instructionss</h3>
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {activeTask.hints || '*No description provided for this task.*'}
                   </ReactMarkdown>
